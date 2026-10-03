@@ -1,9 +1,12 @@
-from fastapi import Depends, FastAPI, status
+from typing import Annotated
+
+from fastapi import Depends, FastAPI, HTTPException, Path, status
 
 from . import __version__
-from .dependencies import get_ingestor
+from .dependencies import get_ingestor, get_store
 from .ingestion import TraceIngestor
-from .models import IngestResult, TraceBatch
+from .models import IngestResult, RunTrace, TraceBatch
+from .storage import TraceStore
 
 
 app = FastAPI(
@@ -29,3 +32,19 @@ def ingest_events(
 ) -> IngestResult:
     return ingestor.ingest(batch)
 
+
+RunIdentifier = Annotated[
+    str,
+    Path(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$"),
+]
+
+
+@app.get("/v1/runs/{run_id}", response_model=RunTrace)
+def get_run(
+    run_id: RunIdentifier,
+    store: TraceStore = Depends(get_store),
+) -> RunTrace:
+    events = store.get_run(run_id)
+    if not events:
+        raise HTTPException(status_code=404, detail="Trace run not found")
+    return RunTrace(run_id=run_id, events=events)
