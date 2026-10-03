@@ -21,10 +21,52 @@ FlowBeacon is an open observability platform for tracing, debugging, and improvi
 - OpenTelemetry-compatible integrations
 - Docker and GitHub Actions
 
+## Run the API locally
+
+Requirements: Python 3.12+
+
+```bash
+cd services/api
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Open the interactive API documentation at `http://localhost:8000/docs`.
+
+Store data in a custom location with:
+
+```bash
+FLOWBEACON_DATABASE_PATH=./data/flowbeacon.db uvicorn app.main:app
+```
+
+## First trace
+
+Submit a bounded event batch:
+
+```bash
+curl -X POST http://localhost:8000/v1/events \
+  -H "Content-Type: application/json" \
+  -d '{"events":[{"event_id":"evt-1","run_id":"run-1","span_id":"span-1","timestamp":"2026-10-03T08:00:00Z","event_type":"tool","status":"ok","duration_ms":12.5,"attributes":{"tool.name":"search"}}]}'
+```
+
+Retrieve the ordered trace with `GET /v1/runs/run-1`.
+
+## Quality checks
+
+```bash
+cd services/api
+python -m compileall -q app tests
+python -m pytest
+```
+
+GitHub Actions runs these checks for every API change.
+
 ## Delivery plan
 
 Development is organized into five milestones: architecture, backend intelligence, dashboard, integrations, and production readiness. Every milestone must keep tests and CI passing.
 
 ## Status
 
-Product foundation in progress.
+Milestone 1 is complete: FlowBeacon has versioned event models, bounded batch validation, recursive redaction, idempotent SQLite persistence, ingestion and run-retrieval APIs, automated tests, and CI. The next milestone adds filtering, pagination, metrics, error classification, and authentication.
