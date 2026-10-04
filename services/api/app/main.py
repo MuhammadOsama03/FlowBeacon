@@ -5,9 +5,9 @@ from fastapi import Depends, FastAPI, HTTPException, Path, Query, status
 from . import __version__
 from .auth import require_ingestion_key
 from .dependencies import get_ingestor, get_store
-from .analytics import summarize_run
+from .analytics import calculate_metrics, summarize_run
 from .ingestion import TraceIngestor
-from .models import IngestResult, RunPage, RunTrace, TraceBatch, TraceStatus
+from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
 from .storage import TraceStore
 
 
@@ -65,3 +65,11 @@ def get_run(
     if not events:
         raise HTTPException(status_code=404, detail="Trace run not found")
     return RunTrace(run_id=run_id, events=events)
+
+
+@app.get("/v1/runs/{run_id}/metrics", response_model=RunMetrics)
+def get_run_metrics(run_id: RunIdentifier, store: TraceStore = Depends(get_store)) -> RunMetrics:
+    events = store.get_run(run_id)
+    if not events:
+        raise HTTPException(status_code=404, detail="Trace run not found")
+    return calculate_metrics(events)

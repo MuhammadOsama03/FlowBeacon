@@ -49,3 +49,17 @@ def test_unknown_run_returns_404(tmp_path):
 def test_rejects_unsafe_run_identifier():
     assert TestClient(app).get("/v1/runs/unsafe%20id").status_code == 422
 
+
+def test_lists_runs_and_exposes_metrics(tmp_path):
+    store = make_store(tmp_path)
+    app.dependency_overrides[get_store] = lambda: store
+    try:
+        page = TestClient(app).get("/v1/runs?search=run&limit=10")
+        assert page.status_code == 200
+        assert page.json()["total"] == 1
+        assert page.json()["items"][0]["run_id"] == "run-1"
+        metrics = TestClient(app).get("/v1/runs/run-1/metrics")
+        assert metrics.status_code == 200
+        assert metrics.json()["latency_ms"] == 0
+    finally:
+        app.dependency_overrides.clear()
