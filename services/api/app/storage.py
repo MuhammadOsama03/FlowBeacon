@@ -42,6 +42,29 @@ class TraceStore:
             ).fetchall()
         return [TraceEvent.model_validate(json.loads(row[0])) for row in rows]
 
+    def list_run_ids(
+        self, *, status: str | None = None, search: str | None = None,
+        limit: int = 20, offset: int = 0
+    ) -> tuple[list[str], int]:
+        clauses, parameters = [], []
+        if search:
+            clauses.append("run_id LIKE ? ESCAPE '\\'")
+            escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            parameters.append(f"%{escaped}%")
+        if status:
+            clauses.append("json_extract(payload, '$.status') = ?")
+            parameters.append(status)
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        with self._connect() as connection:
+            total = connection.execute(
+                f"SELECT COUNT(DISTINCT run_id) FROM trace_events {where}", parameters
+            ).fetchone()[0]
+            rows = connection.execute(
+                f"""SELECT run_id, MAX(timestamp) AS latest FROM trace_events {where}
+                GROUP BY run_id ORDER BY latest DESC, run_id LIMIT ? OFFSET ?""",
+                [*parameters, limit, offset],
+            ).fetchall()
+        return [row[0] for row in rows], total
+
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.database_path)
-
