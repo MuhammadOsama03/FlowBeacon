@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, Path, status
 
 from . import __version__
+from .auth import require_ingestion_key
 from .dependencies import get_ingestor, get_store
 from .ingestion import TraceIngestor
 from .models import IngestResult, RunTrace, TraceBatch
@@ -28,6 +29,7 @@ def health() -> dict[str, str]:
 )
 def ingest_events(
     batch: TraceBatch,
+    _: None = Depends(require_ingestion_key),
     ingestor: TraceIngestor = Depends(get_ingestor),
 ) -> IngestResult:
     return ingestor.ingest(batch)
