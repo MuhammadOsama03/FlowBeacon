@@ -61,3 +61,28 @@ class RunTrace(BaseModel):
     run_id: str
     events: list[TraceEvent]
 
+
+class RunSummary(BaseModel):
+    run_id: str
+    started_at: datetime
+    ended_at: datetime
+    status: TraceStatus
+    event_count: int
+    error_count: int
+    duration_ms: float
+
+
+class RunPage(BaseModel):
+    items: list[RunSummary]
+    total: int
+    limit: int
+    offset: int
+
+
+class RunMetrics(BaseModel):
+    run_id: str
+    latency_ms: float
+    model_latency_ms: float
+    input_tokens: int
+    output_tokens: int
+    estimated_cost_usd: float
