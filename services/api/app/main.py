@@ -1,12 +1,13 @@
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Path, status
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, status
 
 from . import __version__
 from .auth import require_ingestion_key
 from .dependencies import get_ingestor, get_store
+from .analytics import summarize_run
 from .ingestion import TraceIngestor
-from .models import IngestResult, RunTrace, TraceBatch
+from .models import IngestResult, RunPage, RunTrace, TraceBatch, TraceStatus
 from .storage import TraceStore
 
 
@@ -39,6 +40,20 @@ RunIdentifier = Annotated[
     str,
     Path(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$"),
 ]
+
+
+@app.get("/v1/runs", response_model=RunPage)
+def list_runs(
+    status_filter: Annotated[TraceStatus | None, Query(alias="status")] = None,
+    search: Annotated[str | None, Query(min_length=1, max_length=128)] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    store: TraceStore = Depends(get_store),
+) -> RunPage:
+    run_ids, total = store.list_run_ids(status=status_filter, search=search,
+        limit=limit, offset=offset)
+    return RunPage(items=[summarize_run(store.get_run(run_id)) for run_id in run_ids],
+        total=total, limit=limit, offset=offset)
 
 
 @app.get("/v1/runs/{run_id}", response_model=RunTrace)
