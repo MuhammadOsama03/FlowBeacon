@@ -53,6 +53,13 @@ curl -X POST http://localhost:8000/v1/events \
 
 Retrieve the ordered trace with `GET /v1/runs/run-1`.
 
+List summarized runs with `GET /v1/runs`; the endpoint accepts `status`,
+`search`, `limit`, and `offset`. Aggregate latency, token usage, and reported
+costs are available from `GET /v1/runs/{run_id}/metrics`.
+
+In production, set `FLOWBEACON_INGESTION_API_KEY` and send the value as a
+Bearer token. Leaving it unset preserves the zero-configuration local workflow.
+
 ## Quality checks
 
 ```bash
@@ -69,4 +76,7 @@ Development is organized into five milestones: architecture, backend intelligenc
 
 ## Status
 
-Milestone 1 is complete: FlowBeacon has versioned event models, bounded batch validation, recursive redaction, idempotent SQLite persistence, ingestion and run-retrieval APIs, automated tests, and CI. The next milestone adds filtering, pagination, metrics, error classification, and authentication.
+Milestones 1 and 2 are complete: FlowBeacon has secure trace ingestion,
+searchable and paginated run summaries, aggregate metrics, operational error
+classification, authentication foundations, automated tests, and CI. The next
+milestone builds the web dashboard.
