@@ -19,6 +19,29 @@ function runCard(run) {
   </button>`;
 }
 
+function eventRow(event) {
+  const parent = event.parent_span_id ? `<span>parent ${escapeHtml(event.parent_span_id)}</span>` : "";
+  return `<li class="event event--${event.status}">
+    <span class="event__mark" aria-hidden="true"></span><div><div class="event__title"><strong>${escapeHtml(event.event_type)}</strong><span class="status status--${event.status}">${event.status}</span></div>
+    <div class="event__meta"><code>${escapeHtml(event.span_id)}</code>${parent}<time datetime="${event.timestamp}">${time(event.timestamp)}</time>${event.duration_ms == null ? "" : `<span>${duration(event.duration_ms)}</span>`}</div></div>
+  </li>`;
+}
+
+async function selectRun(runId) {
+  state.controller?.abort();
+  state.controller = new AbortController();
+  state.selected = runId;
+  document.querySelectorAll("[data-run-id]").forEach(card => card.setAttribute("aria-pressed", card.dataset.runId === runId));
+  detail.innerHTML = `<div class="empty-state" role="status">Loading trace…</div>`;
+  try {
+    const run = await getRun(runId, state.controller.signal);
+    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2>${escapeHtml(run.run_id)}</h2></div><span>${run.events.length} events</span></header>
+      <section aria-labelledby="timeline-title"><h3 id="timeline-title" class="panel-heading">Trace timeline</h3><ol class="timeline">${run.events.map(eventRow).join("")}</ol></section>`;
+  } catch (error) {
+    if (error.name !== "AbortError") detail.innerHTML = `<div class="empty-state"><h2>Trace unavailable</h2><p>${escapeHtml(error.message)}</p><button data-detail-retry>Try again</button></div>`;
+  }
+}
+
 async function loadRuns() {
   list.innerHTML = `<div class="list-state" role="status">Loading recent runs…</div>`;
   try {
@@ -38,5 +61,7 @@ list.addEventListener("click", event => {
   if (card) selectRun(card.dataset.runId);
   if (event.target.matches("[data-retry]")) loadRuns();
 });
+
+detail.addEventListener("click", event => { if (event.target.matches("[data-detail-retry]")) selectRun(state.selected); });
 
 loadRuns();
