@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="FlowBeacon AI-agent observability dashboard">
+    <title>FlowBeacon · Trace explorer</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script type="module" src="/assets/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#workspace">Skip to traces</a>
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="FlowBeacon dashboard">
+        <span class="beacon" aria-hidden="true"></span>
+        <span>FlowBeacon</span>
+      </a>
+      <div class="service-state"><span></span> Telemetry online</div>
+    </header>
+    <main id="workspace" class="workspace">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Agent observability</p>
+        <h1 id="page-title">Trace every decision.</h1>
+        <p>Inspect latency, failures, model usage, and tool activity from one focused workspace.</p>
+      </section>
+      <section class="dashboard" aria-label="Trace explorer">
+        <aside class="runs-panel" aria-labelledby="runs-title">
+          <h2 id="runs-title">Recent runs</h2>
+          <div id="run-list"></div>
+        </aside>
+        <section id="run-detail" class="detail-panel" aria-live="polite">
+          <div class="empty-state"><h2>Select a run</h2><p>Choose a run to inspect its timeline and signals.</p></div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
