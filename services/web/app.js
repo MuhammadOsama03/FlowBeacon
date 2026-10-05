@@ -34,8 +34,16 @@ async function selectRun(runId) {
   document.querySelectorAll("[data-run-id]").forEach(card => card.setAttribute("aria-pressed", card.dataset.runId === runId));
   detail.innerHTML = `<div class="empty-state" role="status">Loading trace…</div>`;
   try {
-    const run = await getRun(runId, state.controller.signal);
+    const [run, metrics] = await Promise.all([getRun(runId, state.controller.signal), getRunMetrics(runId, state.controller.signal)]);
+    const errors = run.events.filter(event => event.status === "error").length;
     detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2>${escapeHtml(run.run_id)}</h2></div><span>${run.events.length} events</span></header>
+      <dl class="metrics" aria-label="Run metrics">
+        <div><dt>Total latency</dt><dd>${duration(metrics.latency_ms)}</dd></div>
+        <div><dt>Model latency</dt><dd>${duration(metrics.model_latency_ms)}</dd></div>
+        <div><dt>Tokens</dt><dd>${(metrics.input_tokens + metrics.output_tokens).toLocaleString()}</dd></div>
+        <div><dt>Reported cost</dt><dd>$${metrics.estimated_cost_usd.toFixed(4)}</dd></div>
+        <div class="${errors ? "metric--danger" : ""}"><dt>Errors</dt><dd>${errors}</dd></div>
+      </dl>
       <section aria-labelledby="timeline-title"><h3 id="timeline-title" class="panel-heading">Trace timeline</h3><ol class="timeline">${run.events.map(eventRow).join("")}</ol></section>`;
   } catch (error) {
     if (error.name !== "AbortError") detail.innerHTML = `<div class="empty-state"><h2>Trace unavailable</h2><p>${escapeHtml(error.message)}</p><button data-detail-retry>Try again</button></div>`;
