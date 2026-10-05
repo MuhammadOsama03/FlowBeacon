@@ -30,7 +30,8 @@
             <label><span>Search runs</span><input name="search" type="search" placeholder="Run ID" autocomplete="off"></label>
             <label><span>Status</span><select name="status"><option value="">All statuses</option><option value="ok">Succeeded</option><option value="error">Failed</option><option value="started">Running</option></select></label>
           </form>
-          <div id="run-list"></div>
+          <p id="results-count" class="sr-only" aria-live="polite"></p>
+          <div id="run-list" aria-busy="true"></div>
         </aside>
         <section id="run-detail" class="detail-panel" aria-live="polite">
           <div class="empty-state"><h2>Select a run</h2><p>Choose a run to inspect its timeline and signals.</p></div>

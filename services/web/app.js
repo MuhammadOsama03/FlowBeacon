@@ -3,6 +3,7 @@ import { getRun, getRunMetrics, listRuns } from "./api.js";
 const list = document.querySelector("#run-list");
 const detail = document.querySelector("#run-detail");
 const filters = document.querySelector("#filters");
+const resultsCount = document.querySelector("#results-count");
 const state = { selected: null, controller: null };
 
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, character => ({
@@ -36,7 +37,7 @@ async function selectRun(runId) {
   try {
     const [run, metrics] = await Promise.all([getRun(runId, state.controller.signal), getRunMetrics(runId, state.controller.signal)]);
     const errors = run.events.filter(event => event.status === "error").length;
-    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2>${escapeHtml(run.run_id)}</h2></div><span>${run.events.length} events</span></header>
+    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2 tabindex="-1">${escapeHtml(run.run_id)}</h2></div><span>${run.events.length} events</span></header>
       <dl class="metrics" aria-label="Run metrics">
         <div><dt>Total latency</dt><dd>${duration(metrics.latency_ms)}</dd></div>
         <div><dt>Model latency</dt><dd>${duration(metrics.model_latency_ms)}</dd></div>
@@ -51,13 +52,17 @@ async function selectRun(runId) {
 }
 
 async function loadRuns() {
+  list.setAttribute("aria-busy", "true");
   list.innerHTML = `<div class="list-state" role="status">Loading recent runs…</div>`;
   try {
     const form = new FormData(filters);
     const page = await listRuns({ search: form.get("search").trim(), status: form.get("status") });
-    list.innerHTML = page.items.length ? page.items.map(runCard).join("") : `<div class="list-state">No traces yet.</div>`;
+    list.innerHTML = page.items.length ? page.items.map(runCard).join("") : `<div class="list-state"><strong>No matching traces</strong><p>Adjust the search or status filter.</p></div>`;
+    resultsCount.textContent = `${page.total} run${page.total === 1 ? "" : "s"} found`;
   } catch (error) {
-    list.innerHTML = `<div class="list-state list-state--error">Could not load runs.<button data-retry>Try again</button></div>`;
+    list.innerHTML = `<div class="list-state list-state--error" role="alert"><strong>Could not load runs</strong><p>Check the API connection and try again.</p><button data-retry>Try again</button></div>`;
+  } finally {
+    list.setAttribute("aria-busy", "false");
   }
 }
 
@@ -66,7 +71,7 @@ filters.addEventListener("input", () => { clearTimeout(filterTimer); filterTimer
 
 list.addEventListener("click", event => {
   const card = event.target.closest("[data-run-id]");
-  if (card) selectRun(card.dataset.runId);
+  if (card) selectRun(card.dataset.runId).then(() => detail.querySelector("h2")?.focus());
   if (event.target.matches("[data-retry]")) loadRuns();
 });
 
