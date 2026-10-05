@@ -1,6 +1,9 @@
 from typing import Annotated
+from pathlib import Path as FilePath
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import __version__
 from .auth import require_ingestion_key
@@ -16,6 +19,14 @@ app = FastAPI(
     version=__version__,
     description="Secure ingestion and exploration of AI-agent traces.",
 )
+
+WEB_ROOT = FilePath(__file__).resolve().parents[2] / "web"
+app.mount("/assets", StaticFiles(directory=WEB_ROOT), name="assets")
+
+
+@app.get("/", include_in_schema=False)
+def dashboard() -> FileResponse:
+    return FileResponse(WEB_ROOT / "index.html")
 
 
 @app.get("/health")
