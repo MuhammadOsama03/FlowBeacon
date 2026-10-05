@@ -26,6 +26,10 @@
       <section class="dashboard" aria-label="Trace explorer">
         <aside class="runs-panel" aria-labelledby="runs-title">
           <h2 id="runs-title">Recent runs</h2>
+          <form id="filters" class="filters" role="search">
+            <label><span>Search runs</span><input name="search" type="search" placeholder="Run ID" autocomplete="off"></label>
+            <label><span>Status</span><select name="status"><option value="">All statuses</option><option value="ok">Succeeded</option><option value="error">Failed</option><option value="started">Running</option></select></label>
+          </form>
           <div id="run-list"></div>
         </aside>
         <section id="run-detail" class="detail-panel" aria-live="polite">

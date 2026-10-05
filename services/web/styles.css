@@ -18,6 +18,18 @@ h1 { margin:.25rem 0 .75rem; font-size:clamp(2.5rem,6vw,5.5rem); line-height:.95
 .dashboard { display:grid; grid-template-columns:minmax(18rem,24rem) 1fr; min-height:36rem; border:1px solid var(--line); border-radius:1rem; overflow:hidden; background:#0b1512cc; box-shadow:0 2rem 5rem #0005; }
 .runs-panel { border-right:1px solid var(--line); }
 .runs-panel h2,.panel-heading { margin:0; padding:1.25rem; font-size:.9rem; letter-spacing:.04em; }
+.filters { padding:0 1rem 1rem; display:grid; grid-template-columns:1fr 8rem; gap:.5rem; }
+.filters label span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+.filters input,.filters select { width:100%; border:1px solid var(--line); border-radius:.55rem; padding:.65rem .7rem; color:var(--text); background:var(--panel-2); }
+.filters input:focus,.filters select:focus,button:focus-visible { outline:2px solid var(--mint); outline-offset:2px; }
+.run-card { display:block; width:100%; padding:1rem 1.25rem; border:0; border-top:1px solid var(--line); background:transparent; text-align:left; cursor:pointer; }
+.run-card:hover,.run-card[aria-pressed="true"] { background:var(--panel-2); box-shadow:inset 3px 0 var(--mint); }
+.run-card__top,.run-card__meta { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.run-card__meta { margin-top:.55rem; color:var(--muted); font-size:.72rem; }
+.status { padding:.2rem .45rem; border-radius:99px; color:var(--muted); background:#ffffff0b; font-size:.68rem; text-transform:uppercase; }
+.status--ok { color:var(--mint); } .status--error { color:var(--danger); } .status--started { color:var(--amber); }
+.list-state { padding:2rem 1.25rem; color:var(--muted); text-align:center; }
+.list-state button { display:block; margin:.75rem auto; border:1px solid var(--line); background:var(--panel-2); padding:.5rem .8rem; border-radius:.5rem; }
 .detail-panel { min-width:0; padding:1.5rem; }
 .empty-state { min-height:28rem; display:grid; place-content:center; text-align:center; color:var(--muted); }
 .empty-state h2 { color:var(--text); margin-bottom:.25rem; }

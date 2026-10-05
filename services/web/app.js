@@ -2,6 +2,7 @@ import { getRun, getRunMetrics, listRuns } from "./api.js";
 
 const list = document.querySelector("#run-list");
 const detail = document.querySelector("#run-detail");
+const filters = document.querySelector("#filters");
 const state = { selected: null, controller: null };
 
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, character => ({
@@ -21,12 +22,16 @@ function runCard(run) {
 async function loadRuns() {
   list.innerHTML = `<div class="list-state" role="status">Loading recent runs…</div>`;
   try {
-    const page = await listRuns();
+    const form = new FormData(filters);
+    const page = await listRuns({ search: form.get("search").trim(), status: form.get("status") });
     list.innerHTML = page.items.length ? page.items.map(runCard).join("") : `<div class="list-state">No traces yet.</div>`;
   } catch (error) {
     list.innerHTML = `<div class="list-state list-state--error">Could not load runs.<button data-retry>Try again</button></div>`;
   }
 }
+
+let filterTimer;
+filters.addEventListener("input", () => { clearTimeout(filterTimer); filterTimer = setTimeout(loadRuns, 250); });
 
 list.addEventListener("click", event => {
   const card = event.target.closest("[data-run-id]");
