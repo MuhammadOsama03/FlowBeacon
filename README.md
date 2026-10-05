@@ -17,7 +17,7 @@ FlowBeacon is an open observability platform for tracing, debugging, and improvi
 - TypeScript shared schemas
 - FastAPI ingestion and query service
 - PostgreSQL persistence
-- Next.js dashboard
+- Accessible browser-native dashboard
 - OpenTelemetry-compatible integrations
 - Docker and GitHub Actions
 
@@ -33,7 +33,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Open the interactive API documentation at `http://localhost:8000/docs`.
+Open the dashboard at `http://localhost:8000` or the interactive API
+documentation at `http://localhost:8000/docs`.
 
 Store data in a custom location with:
 
@@ -66,6 +67,9 @@ Bearer token. Leaving it unset preserves the zero-configuration local workflow.
 cd services/api
 python -m compileall -q app tests
 python -m pytest
+cd ../web
+node --check app.js
+node --check api.js
 ```
 
 GitHub Actions runs these checks for every API change.
@@ -76,7 +80,8 @@ Development is organized into five milestones: architecture, backend intelligenc
 
 ## Status
 
-Milestones 1 and 2 are complete: FlowBeacon has secure trace ingestion,
+Milestones 1–3 are complete: FlowBeacon has secure trace ingestion,
 searchable and paginated run summaries, aggregate metrics, operational error
-classification, authentication foundations, automated tests, and CI. The next
-milestone builds the web dashboard.
+classification, authentication foundations, and a responsive dashboard with
+run filtering, trace timelines, metric cards, and resilient interface states.
+The next milestone adds telemetry integrations, evaluation, alerts, and export.

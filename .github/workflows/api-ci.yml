@@ -1,15 +1,17 @@
-name: API CI
+name: Application CI
 
 on:
   push:
     branches: [main]
     paths:
       - "services/api/**"
+      - "services/web/**"
       - ".github/workflows/api-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "services/api/**"
+      - "services/web/**"
       - ".github/workflows/api-ci.yml"
 
 permissions:
@@ -44,6 +46,11 @@ jobs:
       - name: Compile source
         run: python -m compileall -q app tests
 
+      - name: Validate dashboard modules
+        working-directory: services/web
+        run: |
+          node --check app.js
+          node --check api.js
+
       - name: Run tests
         run: python -m pytest --quiet
-
