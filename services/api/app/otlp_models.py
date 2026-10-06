@@ -29,14 +29,14 @@ class OtlpSpan(BaseModel):
 
 class OtlpScopeSpans(BaseModel):
     model_config = ConfigDict(extra="ignore", populate_by_name=True)
-    spans: list[OtlpSpan] = Field(default_factory=list, max_length=100)
+    spans: list[OtlpSpan] = Field(min_length=1, max_length=100)
 
 
 class OtlpResourceSpans(BaseModel):
     model_config = ConfigDict(extra="ignore", populate_by_name=True)
-    scope_spans: list[OtlpScopeSpans] = Field(alias="scopeSpans", max_length=20)
+    scope_spans: list[OtlpScopeSpans] = Field(alias="scopeSpans", min_length=1, max_length=20)
 
 
 class OtlpExportRequest(BaseModel):
     model_config = ConfigDict(extra="ignore", populate_by_name=True)
-    resource_spans: list[OtlpResourceSpans] = Field(alias="resourceSpans", max_length=20)
+    resource_spans: list[OtlpResourceSpans] = Field(alias="resourceSpans", min_length=1, max_length=20)

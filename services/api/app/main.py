@@ -11,6 +11,8 @@ from .dependencies import get_ingestor, get_store
 from .analytics import calculate_metrics, summarize_run
 from .ingestion import TraceIngestor
 from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
+from .otlp import translate_otlp
+from .otlp_models import OtlpExportRequest
 from .storage import TraceStore
 
 
@@ -45,6 +47,16 @@ def ingest_events(
     ingestor: TraceIngestor = Depends(get_ingestor),
 ) -> IngestResult:
     return ingestor.ingest(batch)
+
+
+@app.post("/v1/otlp/v1/traces", response_model=IngestResult,
+          status_code=status.HTTP_202_ACCEPTED)
+def ingest_otlp_traces(
+    request: OtlpExportRequest,
+    _: None = Depends(require_ingestion_key),
+    ingestor: TraceIngestor = Depends(get_ingestor),
+) -> IngestResult:
+    return ingestor.ingest(translate_otlp(request))
 
 
 RunIdentifier = Annotated[
