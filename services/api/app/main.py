@@ -2,7 +2,7 @@ from typing import Annotated
 from pathlib import Path as FilePath
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
@@ -12,6 +12,7 @@ from .analytics import calculate_metrics, summarize_run
 from .alerts import RunAlert, detect_alerts
 from .ingestion import TraceIngestor
 from .evaluation import EvaluationPolicy, EvaluationResult, evaluate_run
+from .exports import export_csv, export_ndjson
 from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
 from .otlp import translate_otlp
 from .otlp_models import OtlpExportRequest
@@ -119,3 +120,16 @@ def preview_run_alerts(run_id: RunIdentifier, policy: EvaluationPolicy,
     if not events:
         raise HTTPException(status_code=404, detail="Trace run not found")
     return detect_alerts(events, policy)
+
+
+@app.get("/v1/runs/{run_id}/export")
+def export_run(run_id: RunIdentifier,
+               format: Annotated[str, Query(pattern="^(ndjson|csv)$")] = "ndjson",
+               store: TraceStore = Depends(get_store)) -> Response:
+    events = store.get_run(run_id)
+    if not events:
+        raise HTTPException(status_code=404, detail="Trace run not found")
+    body = export_csv(events) if format == "csv" else export_ndjson(events)
+    media_type = "text/csv" if format == "csv" else "application/x-ndjson"
+    return Response(body, media_type=media_type, headers={
+        "Content-Disposition": f'attachment; filename="{run_id}.{format}"'})
