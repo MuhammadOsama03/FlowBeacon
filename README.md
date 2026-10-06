@@ -58,6 +58,11 @@ List summarized runs with `GET /v1/runs`; the endpoint accepts `status`,
 `search`, `limit`, and `offset`. Aggregate latency, token usage, and reported
 costs are available from `GET /v1/runs/{run_id}/metrics`.
 
+OTLP/HTTP JSON exporters can send spans to `POST /v1/otlp/v1/traces`. Runs can
+be evaluated against latency and error policies, previewed for alerts, and
+exported as NDJSON or CSV. See [the operator guide](docs/operator-guide.md) and
+the dependency-free [Python instrumentation example](examples/python/agent_trace.py).
+
 In production, set `FLOWBEACON_INGESTION_API_KEY` and send the value as a
 Bearer token. Leaving it unset preserves the zero-configuration local workflow.
 
@@ -80,8 +85,10 @@ Development is organized into five milestones: architecture, backend intelligenc
 
 ## Status
 
-Milestones 1–3 are complete: FlowBeacon has secure trace ingestion,
+Milestones 1–4 are complete: FlowBeacon has secure trace ingestion,
 searchable and paginated run summaries, aggregate metrics, operational error
 classification, authentication foundations, and a responsive dashboard with
 run filtering, trace timelines, metric cards, and resilient interface states.
-The next milestone adds telemetry integrations, evaluation, alerts, and export.
+It also accepts OTLP telemetry and supports policy evaluation, alert previews,
+and data export. The final milestone focuses on deployment, hardening, and
+release readiness.
