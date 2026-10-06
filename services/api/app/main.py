@@ -10,6 +10,7 @@ from .auth import require_ingestion_key
 from .dependencies import get_ingestor, get_store
 from .analytics import calculate_metrics, summarize_run
 from .ingestion import TraceIngestor
+from .evaluation import EvaluationPolicy, EvaluationResult, evaluate_run
 from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
 from .otlp import translate_otlp
 from .otlp_models import OtlpExportRequest
@@ -96,3 +97,15 @@ def get_run_metrics(run_id: RunIdentifier, store: TraceStore = Depends(get_store
     if not events:
         raise HTTPException(status_code=404, detail="Trace run not found")
     return calculate_metrics(events)
+
+
+@app.post("/v1/runs/{run_id}/evaluate", response_model=EvaluationResult)
+def evaluate_trace_run(
+    run_id: RunIdentifier,
+    policy: EvaluationPolicy,
+    store: TraceStore = Depends(get_store),
+) -> EvaluationResult:
+    events = store.get_run(run_id)
+    if not events:
+        raise HTTPException(status_code=404, detail="Trace run not found")
+    return evaluate_run(events, policy)
