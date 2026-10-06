@@ -9,6 +9,7 @@ from . import __version__
 from .auth import require_ingestion_key
 from .dependencies import get_ingestor, get_store
 from .analytics import calculate_metrics, summarize_run
+from .alerts import RunAlert, detect_alerts
 from .ingestion import TraceIngestor
 from .evaluation import EvaluationPolicy, EvaluationResult, evaluate_run
 from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
@@ -109,3 +110,12 @@ def evaluate_trace_run(
     if not events:
         raise HTTPException(status_code=404, detail="Trace run not found")
     return evaluate_run(events, policy)
+
+
+@app.post("/v1/runs/{run_id}/alerts", response_model=list[RunAlert])
+def preview_run_alerts(run_id: RunIdentifier, policy: EvaluationPolicy,
+                       store: TraceStore = Depends(get_store)) -> list[RunAlert]:
+    events = store.get_run(run_id)
+    if not events:
+        raise HTTPException(status_code=404, detail="Trace run not found")
+    return detect_alerts(events, policy)
