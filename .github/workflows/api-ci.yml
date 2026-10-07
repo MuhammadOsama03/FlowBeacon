@@ -6,12 +6,18 @@ on:
     paths:
       - "services/api/**"
       - "services/web/**"
+      - "scripts/**"
+      - "Dockerfile"
+      - "compose.yaml"
       - ".github/workflows/api-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "services/api/**"
       - "services/web/**"
+      - "scripts/**"
+      - "Dockerfile"
+      - "compose.yaml"
       - ".github/workflows/api-ci.yml"
 
 permissions:
@@ -54,3 +60,35 @@ jobs:
 
       - name: Run tests
         run: python -m pytest --quiet
+
+  container-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build production image
+        run: docker build --tag flowbeacon:ci .
+
+      - name: Start hardened container
+        run: |
+          docker run --detach --name flowbeacon --read-only --tmpfs /tmp \
+            --mount type=volume,destination=/data -p 8000:8000 \
+            -e FLOWBEACON_ENVIRONMENT=production \
+            -e FLOWBEACON_DATABASE_PATH=/data/flowbeacon.db \
+            -e FLOWBEACON_INGESTION_API_KEY=ci-smoke-key-with-24-characters \
+            flowbeacon:ci
+          for attempt in {1..20}; do
+            curl --fail --silent http://localhost:8000/ready && break
+            sleep 1
+          done
+
+      - name: Exercise deployment
+        env:
+          FLOWBEACON_API_KEY: ci-smoke-key-with-24-characters
+        run: python scripts/smoke_test.py
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs flowbeacon
