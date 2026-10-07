@@ -49,6 +49,13 @@ def health() -> dict[str, str]:
     return {"status": "ok", "service": "flowbeacon-api", "version": __version__}
 
 
+@app.get("/ready")
+def readiness(store: TraceStore = Depends(get_store)) -> dict[str, str]:
+    if not store.ping():
+        raise HTTPException(status_code=503, detail="Persistence unavailable")
+    return {"status": "ready", "persistence": "ok"}
+
+
 @app.post(
     "/v1/events",
     response_model=IngestResult,

@@ -68,3 +68,10 @@ class TraceStore:
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.database_path)
+
+    def ping(self) -> bool:
+        try:
+            with self._connect() as connection:
+                return connection.execute("SELECT 1").fetchone() == (1,)
+        except sqlite3.Error:
+            return False
