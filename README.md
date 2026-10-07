@@ -79,16 +79,20 @@ node --check api.js
 
 GitHub Actions runs these checks for every API change.
 
+For production, use the hardened container configuration in
+[the deployment guide](docs/deployment.md). Review the explicit
+[release checklist](docs/release-checklist.md) before exposing the service.
+
 ## Delivery plan
 
 Development is organized into five milestones: architecture, backend intelligence, dashboard, integrations, and production readiness. Every milestone must keep tests and CI passing.
 
 ## Status
 
-Milestones 1–4 are complete: FlowBeacon has secure trace ingestion,
+FlowBeacon 1.0 is a production-ready single-node baseline with secure trace ingestion,
 searchable and paginated run summaries, aggregate metrics, operational error
 classification, authentication foundations, and a responsive dashboard with
 run filtering, trace timelines, metric cards, and resilient interface states.
 It also accepts OTLP telemetry and supports policy evaluation, alert previews,
-and data export. The final milestone focuses on deployment, hardening, and
-release readiness.
+data export, hardened container deployment, operational probes, and end-to-end
+release verification.

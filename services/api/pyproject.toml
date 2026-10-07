@@ -1,10 +1,9 @@
 [project]
 name = "flowbeacon-api"
-version = "0.1.0"
+version = "1.0.0"
 description = "Trace ingestion and query API for FlowBeacon"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-
