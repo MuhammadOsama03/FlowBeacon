@@ -29,6 +29,12 @@ def test_health_endpoint():
         "service": "flowbeacon-api",
         "version": "0.1.0",
     }
+    assert len(response.headers["x-request-id"]) == 32
+
+
+def test_preserves_valid_request_correlation_id():
+    response = TestClient(app).get("/health", headers={"X-Request-ID": "deploy-12345"})
+    assert response.headers["x-request-id"] == "deploy-12345"
 
 
 def test_ingests_valid_event_batch(tmp_path):
@@ -48,4 +54,3 @@ def test_rejects_invalid_event_batch():
     response = TestClient(app).post("/v1/events", json={"events": []})
 
     assert response.status_code == 422
-

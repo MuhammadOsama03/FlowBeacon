@@ -20,6 +20,7 @@ from .otlp_models import OtlpExportRequest
 from .storage import TraceStore
 from .config import Settings
 from .security import SecurityHeadersMiddleware
+from .observability import RequestObservabilityMiddleware
 
 
 app = FastAPI(
@@ -31,6 +32,7 @@ app = FastAPI(
 runtime_settings = Settings.from_environment()
 app.add_middleware(SecurityHeadersMiddleware,
                    production=runtime_settings.environment == "production")
+app.add_middleware(RequestObservabilityMiddleware)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(runtime_settings.allowed_hosts))
 
 WEB_ROOT = FilePath(__file__).resolve().parents[2] / "web"
