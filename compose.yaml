@@ -1,0 +1,32 @@
+services:
+  flowbeacon:
+    build:
+      context: .
+    image: flowbeacon:local
+    restart: unless-stopped
+    init: true
+    environment:
+      FLOWBEACON_ENVIRONMENT: production
+      FLOWBEACON_DATABASE_PATH: /data/flowbeacon.db
+      FLOWBEACON_INGESTION_API_KEY: ${FLOWBEACON_INGESTION_API_KEY:?set in environment}
+      FLOWBEACON_ALLOWED_HOSTS: ${FLOWBEACON_ALLOWED_HOSTS:-localhost,127.0.0.1}
+    ports:
+      - "${FLOWBEACON_PORT:-8000}:8000"
+    volumes:
+      - flowbeacon-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 4
+      start_period: 10s
+
+volumes:
+  flowbeacon-data:
