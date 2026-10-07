@@ -4,6 +4,7 @@ from pathlib import Path as FilePath
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, status
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
 from .auth import require_ingestion_key
@@ -17,6 +18,8 @@ from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, Tra
 from .otlp import translate_otlp
 from .otlp_models import OtlpExportRequest
 from .storage import TraceStore
+from .config import Settings
+from .security import SecurityHeadersMiddleware
 
 
 app = FastAPI(
@@ -24,6 +27,11 @@ app = FastAPI(
     version=__version__,
     description="Secure ingestion and exploration of AI-agent traces.",
 )
+
+runtime_settings = Settings.from_environment()
+app.add_middleware(SecurityHeadersMiddleware,
+                   production=runtime_settings.environment == "production")
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(runtime_settings.allowed_hosts))
 
 WEB_ROOT = FilePath(__file__).resolve().parents[2] / "web"
 app.mount("/assets", StaticFiles(directory=WEB_ROOT), name="assets")

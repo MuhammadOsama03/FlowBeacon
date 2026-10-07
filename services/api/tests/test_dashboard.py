@@ -11,6 +11,9 @@ def test_serves_dashboard_shell():
     assert response.status_code == 200
     assert "Trace every decision" in response.text
     assert response.headers["content-type"].startswith("text/html")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
 
 
 def test_serves_versioned_dashboard_assets():
