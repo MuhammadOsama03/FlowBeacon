@@ -1,4 +1,4 @@
-import { getRun, getRunMetrics, listRuns } from "./api.js";
+import { evaluateRun, getRun, getRunMetrics, listRuns } from "./api.js";
 
 const list = document.querySelector("#run-list");
 const detail = document.querySelector("#run-detail");
@@ -49,6 +49,7 @@ async function selectRun(runId) {
         <div><dt>Reported cost</dt><dd>$${metrics.estimated_cost_usd.toFixed(4)}</dd></div>
         <div class="${errors ? "metric--danger" : ""}"><dt>Errors</dt><dd>${errors}</dd></div>
       </dl>
+      <section class="signals" aria-labelledby="signals-title"><div><h3 id="signals-title">Quality gate</h3><p>Check this run against the default 30-second, zero-error policy.</p></div><button data-evaluate>Evaluate</button><output id="evaluation-result"></output></section>
       <section aria-labelledby="timeline-title"><h3 id="timeline-title" class="panel-heading">Trace timeline</h3><ol class="timeline">${run.events.map(eventRow).join("")}</ol></section>`;
   } catch (error) {
     if (error.name !== "AbortError") detail.innerHTML = `<div class="empty-state"><h2>Trace unavailable</h2><p>${escapeHtml(error.message)}</p><button data-detail-retry>Try again</button></div>`;
@@ -85,6 +86,16 @@ list.addEventListener("click", event => {
   if (event.target.matches("[data-retry]")) loadRuns();
 });
 
-detail.addEventListener("click", event => { if (event.target.matches("[data-detail-retry]")) selectRun(state.selected); });
+detail.addEventListener("click", async event => {
+  if (event.target.matches("[data-detail-retry]")) selectRun(state.selected);
+  if (event.target.matches("[data-evaluate]")) {
+    const output = detail.querySelector("#evaluation-result");
+    output.textContent = "Evaluating…";
+    try {
+      const result = await evaluateRun(state.selected, { max_latency_ms: 30000, max_errors: 0 });
+      output.innerHTML = `<strong class="verdict verdict--${result.verdict}">${result.verdict}</strong> ${Math.round(result.score * 100)}%`;
+    } catch { output.textContent = "Evaluation unavailable"; }
+  }
+});
 
 loadRuns();

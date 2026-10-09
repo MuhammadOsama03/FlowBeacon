@@ -14,6 +14,13 @@ async function request(path, signal) {
   return response.json();
 }
 
+async function post(path, body, signal) {
+  const response = await fetch(path, { method: "POST", signal,
+    headers: { ...JSON_HEADERS, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!response.ok) throw new ApiError(`Request failed (${response.status})`, response.status);
+  return response.json();
+}
+
 export function listRuns({ search = "", status = "", limit = 20, offset = 0, signal } = {}) {
   const query = new URLSearchParams({ limit, offset });
   if (search) query.set("search", search);
@@ -27,4 +34,8 @@ export function getRun(runId, signal) {
 
 export function getRunMetrics(runId, signal) {
   return request(`/v1/runs/${encodeURIComponent(runId)}/metrics`, signal);
+}
+
+export function evaluateRun(runId, policy, signal) {
+  return post(`/v1/runs/${encodeURIComponent(runId)}/evaluate`, policy, signal);
 }
