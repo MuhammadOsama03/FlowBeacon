@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 — 2026-10-09
+
+- Added fail-closed administrative authentication for sensitive operations.
+- Added whole-run retention cleanup that never leaves partial traces.
+- Added protected Prometheus metrics with bounded route labels.
+- Added dashboard pagination, direct exports, quality evaluation, and alerts.
+- Expanded release validation to cover dependencies, scripts, and UI behavior.
+
 ## 1.0.0 — 2026-10-07
 
 - Added secure native and OTLP trace ingestion with idempotent persistence.

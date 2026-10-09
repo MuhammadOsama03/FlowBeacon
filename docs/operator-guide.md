@@ -37,3 +37,16 @@ flat operational event index and intentionally excludes attribute payloads.
 - Terminate TLS before FlowBeacon and restrict ingestion at the network edge.
 - Treat exports as operational data even though known credentials are redacted.
 - Monitor rejected payloads (`422`) and authentication failures (`401`).
+
+## Retention and metrics
+
+Administrative operations use a separate `FLOWBEACON_ADMIN_API_KEY`. Delete
+only complete runs older than an explicit timezone-aware cutoff:
+
+```bash
+curl -X DELETE 'https://traces.example.com/v1/admin/runs?before=2026-09-01T00:00:00Z' \
+  -H "Authorization: Bearer $FLOWBEACON_ADMIN_API_KEY"
+```
+
+Scrape `/metrics` with the same administrative Bearer credential. Metrics use
+route templates instead of raw run IDs, preventing unbounded label cardinality.

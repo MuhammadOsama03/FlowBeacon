@@ -7,6 +7,7 @@ start the hardened Compose service:
 
 ```bash
 export FLOWBEACON_INGESTION_API_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export FLOWBEACON_ADMIN_API_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export FLOWBEACON_ALLOWED_HOSTS="traces.example.com"
 docker compose up --build -d
 docker compose ps
