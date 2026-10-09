@@ -78,6 +78,7 @@ jobs:
             -e FLOWBEACON_ENVIRONMENT=production \
             -e FLOWBEACON_DATABASE_PATH=/data/flowbeacon.db \
             -e FLOWBEACON_INGESTION_API_KEY=ci-smoke-key-with-24-characters \
+            -e FLOWBEACON_ADMIN_API_KEY=ci-admin-key-with-24-characters \
             flowbeacon:ci
           for attempt in {1..20}; do
             curl --fail --silent http://localhost:8000/ready && break

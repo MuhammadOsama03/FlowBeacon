@@ -9,6 +9,7 @@ services:
       FLOWBEACON_ENVIRONMENT: production
       FLOWBEACON_DATABASE_PATH: /data/flowbeacon.db
       FLOWBEACON_INGESTION_API_KEY: ${FLOWBEACON_INGESTION_API_KEY:?set in environment}
+      FLOWBEACON_ADMIN_API_KEY: ${FLOWBEACON_ADMIN_API_KEY:?set in environment}
       FLOWBEACON_ALLOWED_HOSTS: ${FLOWBEACON_ALLOWED_HOSTS:-localhost,127.0.0.1}
     ports:
       - "${FLOWBEACON_PORT:-8000}:8000"
