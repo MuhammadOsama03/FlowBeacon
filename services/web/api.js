@@ -39,3 +39,7 @@ export function getRunMetrics(runId, signal) {
 export function evaluateRun(runId, policy, signal) {
   return post(`/v1/runs/${encodeURIComponent(runId)}/evaluate`, policy, signal);
 }
+
+export function previewAlerts(runId, policy, signal) {
+  return post(`/v1/runs/${encodeURIComponent(runId)}/alerts`, policy, signal);
+}

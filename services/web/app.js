@@ -1,4 +1,4 @@
-import { evaluateRun, getRun, getRunMetrics, listRuns } from "./api.js";
+import { evaluateRun, getRun, getRunMetrics, listRuns, previewAlerts } from "./api.js";
 
 const list = document.querySelector("#run-list");
 const detail = document.querySelector("#run-detail");
@@ -49,7 +49,7 @@ async function selectRun(runId) {
         <div><dt>Reported cost</dt><dd>$${metrics.estimated_cost_usd.toFixed(4)}</dd></div>
         <div class="${errors ? "metric--danger" : ""}"><dt>Errors</dt><dd>${errors}</dd></div>
       </dl>
-      <section class="signals" aria-labelledby="signals-title"><div><h3 id="signals-title">Quality gate</h3><p>Check this run against the default 30-second, zero-error policy.</p></div><button data-evaluate>Evaluate</button><output id="evaluation-result"></output></section>
+      <section class="signals" aria-labelledby="signals-title"><div><h3 id="signals-title">Quality signals</h3><p>Check the default 30-second, zero-error policy.</p></div><div><button data-evaluate>Evaluate</button><button class="button-secondary" data-alerts>Preview alerts</button></div><output id="evaluation-result"></output><ul id="alert-results" class="alert-results"></ul></section>
       <section aria-labelledby="timeline-title"><h3 id="timeline-title" class="panel-heading">Trace timeline</h3><ol class="timeline">${run.events.map(eventRow).join("")}</ol></section>`;
   } catch (error) {
     if (error.name !== "AbortError") detail.innerHTML = `<div class="empty-state"><h2>Trace unavailable</h2><p>${escapeHtml(error.message)}</p><button data-detail-retry>Try again</button></div>`;
@@ -95,6 +95,14 @@ detail.addEventListener("click", async event => {
       const result = await evaluateRun(state.selected, { max_latency_ms: 30000, max_errors: 0 });
       output.innerHTML = `<strong class="verdict verdict--${result.verdict}">${result.verdict}</strong> ${Math.round(result.score * 100)}%`;
     } catch { output.textContent = "Evaluation unavailable"; }
+  }
+  if (event.target.matches("[data-alerts]")) {
+    const output = detail.querySelector("#alert-results");
+    output.innerHTML = "<li>Checking signals…</li>";
+    try {
+      const alerts = await previewAlerts(state.selected, { max_latency_ms: 30000, max_errors: 0 });
+      output.innerHTML = alerts.length ? alerts.map(alert => `<li class="alert alert--${alert.severity}"><strong>${escapeHtml(alert.severity)}</strong> ${escapeHtml(alert.message)}</li>`).join("") : "<li>No alerts for this policy.</li>";
+    } catch { output.innerHTML = "<li>Alert preview unavailable.</li>"; }
   }
 });
 
