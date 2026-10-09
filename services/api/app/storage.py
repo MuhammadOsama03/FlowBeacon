@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 from .models import TraceEvent
@@ -75,3 +76,17 @@ class TraceStore:
                 return connection.execute("SELECT 1").fetchone() == (1,)
         except sqlite3.Error:
             return False
+
+    def delete_runs_before(self, cutoff: datetime) -> tuple[int, int]:
+        """Delete complete runs whose newest event predates the cutoff."""
+        cutoff_value = cutoff.isoformat()
+        with self._connect() as connection:
+            run_ids = [row[0] for row in connection.execute(
+                """SELECT run_id FROM trace_events GROUP BY run_id
+                HAVING MAX(timestamp) < ?""", (cutoff_value,)).fetchall()]
+            if not run_ids:
+                return 0, 0
+            placeholders = ",".join("?" for _ in run_ids)
+            cursor = connection.execute(
+                f"DELETE FROM trace_events WHERE run_id IN ({placeholders})", run_ids)
+        return len(run_ids), cursor.rowcount
