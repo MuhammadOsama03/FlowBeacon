@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import datetime
 from pathlib import Path as FilePath
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, status
@@ -7,14 +8,14 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
-from .auth import require_ingestion_key
+from .auth import require_admin_key, require_ingestion_key
 from .dependencies import get_ingestor, get_store
 from .analytics import calculate_metrics, summarize_run
 from .alerts import RunAlert, detect_alerts
 from .ingestion import TraceIngestor
 from .evaluation import EvaluationPolicy, EvaluationResult, evaluate_run
 from .exports import export_csv, export_ndjson
-from .models import IngestResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
+from .models import IngestResult, RetentionResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
 from .otlp import translate_otlp
 from .otlp_models import OtlpExportRequest
 from .storage import TraceStore
@@ -150,3 +151,15 @@ def export_run(run_id: RunIdentifier,
     media_type = "text/csv" if format == "csv" else "application/x-ndjson"
     return Response(body, media_type=media_type, headers={
         "Content-Disposition": f'attachment; filename="{run_id}.{format}"'})
+
+
+@app.delete("/v1/admin/runs", response_model=RetentionResult)
+def delete_expired_runs(
+    before: datetime,
+    _: None = Depends(require_admin_key),
+    store: TraceStore = Depends(get_store),
+) -> RetentionResult:
+    if before.tzinfo is None or before.utcoffset() is None:
+        raise HTTPException(status_code=422, detail="Retention cutoff must include a timezone")
+    runs, events = store.delete_runs_before(before)
+    return RetentionResult(deleted_runs=runs, deleted_events=events)

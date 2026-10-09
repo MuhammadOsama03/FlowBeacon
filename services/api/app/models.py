@@ -86,3 +86,8 @@ class RunMetrics(BaseModel):
     input_tokens: int
     output_tokens: int
     estimated_cost_usd: float
+
+
+class RetentionResult(BaseModel):
+    deleted_runs: int = Field(ge=0)
+    deleted_events: int = Field(ge=0)
