@@ -40,7 +40,8 @@ async function selectRun(runId) {
   try {
     const [run, metrics] = await Promise.all([getRun(runId, state.controller.signal), getRunMetrics(runId, state.controller.signal)]);
     const errors = run.events.filter(event => event.status === "error").length;
-    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2 tabindex="-1">${escapeHtml(run.run_id)}</h2></div><span>${run.events.length} events</span></header>
+    const encodedRunId = encodeURIComponent(run.run_id);
+    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2 tabindex="-1">${escapeHtml(run.run_id)}</h2></div><div class="detail-actions"><span>${run.events.length} events</span><a href="/v1/runs/${encodedRunId}/export?format=ndjson" download>NDJSON</a><a href="/v1/runs/${encodedRunId}/export?format=csv" download>CSV</a></div></header>
       <dl class="metrics" aria-label="Run metrics">
         <div><dt>Total latency</dt><dd>${duration(metrics.latency_ms)}</dd></div>
         <div><dt>Model latency</dt><dd>${duration(metrics.model_latency_ms)}</dd></div>

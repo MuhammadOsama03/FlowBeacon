@@ -41,6 +41,9 @@ h1 { margin:.25rem 0 .75rem; font-size:clamp(2.5rem,6vw,5.5rem); line-height:.95
 .detail-heading { display:flex; justify-content:space-between; align-items:end; padding-bottom:1.25rem; border-bottom:1px solid var(--line); }
 .detail-heading h2 { margin:.2rem 0 0; font-size:clamp(1.4rem,3vw,2.2rem); overflow-wrap:anywhere; }
 .detail-heading>span { color:var(--muted); font-size:.8rem; }
+.detail-actions { display:flex; align-items:center; gap:.55rem; color:var(--muted); font-size:.75rem; }
+.detail-actions a { color:var(--mint); text-decoration:none; border:1px solid var(--line); border-radius:.45rem; padding:.4rem .55rem; }
+.detail-actions a:hover { background:var(--panel-2); }
 .metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:1px; margin:1.25rem 0; padding:1px; background:var(--line); border-radius:.75rem; overflow:hidden; }
 .metrics div { padding:1rem; background:var(--panel); }
 .metrics dt { color:var(--muted); font-size:.7rem; }
