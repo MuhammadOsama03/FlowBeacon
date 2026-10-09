@@ -22,6 +22,7 @@ from .storage import TraceStore
 from .config import Settings
 from .security import SecurityHeadersMiddleware
 from .observability import RequestObservabilityMiddleware
+from .runtime_metrics import runtime_metrics
 
 
 app = FastAPI(
@@ -55,6 +56,11 @@ def readiness(store: TraceStore = Depends(get_store)) -> dict[str, str]:
     if not store.ping():
         raise HTTPException(status_code=503, detail="Persistence unavailable")
     return {"status": "ready", "persistence": "ok"}
+
+
+@app.get("/metrics", include_in_schema=False)
+def prometheus_metrics(_: None = Depends(require_admin_key)) -> Response:
+    return Response(runtime_metrics.prometheus(), media_type="text/plain; version=0.0.4")
 
 
 @app.post(
