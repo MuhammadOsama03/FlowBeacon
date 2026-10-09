@@ -4,7 +4,10 @@ const list = document.querySelector("#run-list");
 const detail = document.querySelector("#run-detail");
 const filters = document.querySelector("#filters");
 const resultsCount = document.querySelector("#results-count");
-const state = { selected: null, controller: null };
+const previousPage = document.querySelector("#previous-page");
+const nextPage = document.querySelector("#next-page");
+const pageLabel = document.querySelector("#page-label");
+const state = { selected: null, controller: null, offset: 0, limit: 20, total: 0 };
 
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, character => ({
   "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;"
@@ -56,9 +59,13 @@ async function loadRuns() {
   list.innerHTML = `<div class="list-state" role="status">Loading recent runs…</div>`;
   try {
     const form = new FormData(filters);
-    const page = await listRuns({ search: form.get("search").trim(), status: form.get("status") });
+    const page = await listRuns({ search: form.get("search").trim(), status: form.get("status"), limit: state.limit, offset: state.offset });
+    state.total = page.total;
     list.innerHTML = page.items.length ? page.items.map(runCard).join("") : `<div class="list-state"><strong>No matching traces</strong><p>Adjust the search or status filter.</p></div>`;
     resultsCount.textContent = `${page.total} run${page.total === 1 ? "" : "s"} found`;
+    previousPage.disabled = state.offset === 0;
+    nextPage.disabled = state.offset + state.limit >= page.total;
+    pageLabel.textContent = `Page ${Math.floor(state.offset / state.limit) + 1}`;
   } catch (error) {
     list.innerHTML = `<div class="list-state list-state--error" role="alert"><strong>Could not load runs</strong><p>Check the API connection and try again.</p><button data-retry>Try again</button></div>`;
   } finally {
@@ -67,7 +74,9 @@ async function loadRuns() {
 }
 
 let filterTimer;
-filters.addEventListener("input", () => { clearTimeout(filterTimer); filterTimer = setTimeout(loadRuns, 250); });
+filters.addEventListener("input", () => { state.offset = 0; clearTimeout(filterTimer); filterTimer = setTimeout(loadRuns, 250); });
+previousPage.addEventListener("click", () => { state.offset = Math.max(0, state.offset - state.limit); loadRuns(); });
+nextPage.addEventListener("click", () => { if (state.offset + state.limit < state.total) { state.offset += state.limit; loadRuns(); } });
 
 list.addEventListener("click", event => {
   const card = event.target.closest("[data-run-id]");
