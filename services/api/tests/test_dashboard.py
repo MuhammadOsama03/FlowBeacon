@@ -21,3 +21,7 @@ def test_serves_versioned_dashboard_assets():
     script = client.get("/assets/app.js")
     assert script.status_code == 200
     assert script.headers["content-type"].startswith("text/javascript")
+    assert "previous-page" in client.get("/").text
+    assert "data-evaluate" in script.text
+    assert "data-alerts" in script.text
+    assert "/export?format=ndjson" in script.text
