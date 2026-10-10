@@ -43,7 +43,7 @@ async function selectRun(runId) {
     const [run, metrics] = await Promise.all([getRun(runId, state.controller.signal), getRunMetrics(runId, state.controller.signal)]);
     const errors = run.events.filter(event => event.status === "error").length;
     const encodedRunId = encodeURIComponent(run.run_id);
-    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2 tabindex="-1">${escapeHtml(run.run_id)}</h2></div><div class="detail-actions"><span>${run.events.length} events</span><a href="/v1/runs/${encodedRunId}/export?format=ndjson" download>NDJSON</a><a href="/v1/runs/${encodedRunId}/export?format=csv" download>CSV</a></div></header>
+    detail.innerHTML = `<header class="detail-heading"><div><p class="eyebrow">Run detail</p><h2 tabindex="-1">${escapeHtml(run.run_id)}</h2></div><div class="detail-actions"><span>${run.events.length} events</span><button data-copy-run>Copy ID</button><a href="/v1/runs/${encodedRunId}/export?format=ndjson" download>NDJSON</a><a href="/v1/runs/${encodedRunId}/export?format=csv" download>CSV</a></div></header>
       <dl class="metrics" aria-label="Run metrics">
         <div><dt>Total latency</dt><dd>${duration(metrics.latency_ms)}</dd></div>
         <div><dt>Model latency</dt><dd>${duration(metrics.model_latency_ms)}</dd></div>
@@ -106,6 +106,10 @@ detail.addEventListener("click", async event => {
       const alerts = await previewAlerts(state.selected, { max_latency_ms: 30000, max_errors: 0 });
       output.innerHTML = alerts.length ? alerts.map(alert => `<li class="alert alert--${alert.severity}"><strong>${escapeHtml(alert.severity)}</strong> ${escapeHtml(alert.message)}</li>`).join("") : "<li>No alerts for this policy.</li>";
     } catch { output.innerHTML = "<li>Alert preview unavailable.</li>"; }
+  }
+  if (event.target.matches("[data-copy-run]")) {
+    await navigator.clipboard.writeText(state.selected);
+    event.target.textContent = "Copied";
   }
 });
 
