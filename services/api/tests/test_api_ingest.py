@@ -27,7 +27,7 @@ def test_health_endpoint():
     assert response.json() == {
         "status": "ok",
         "service": "flowbeacon-api",
-        "version": "1.1.0",
+        "version": "1.2.0",
     }
     assert len(response.headers["x-request-id"]) == 32
 

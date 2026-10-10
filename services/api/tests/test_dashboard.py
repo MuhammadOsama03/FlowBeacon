@@ -25,3 +25,6 @@ def test_serves_versioned_dashboard_assets():
     assert "data-evaluate" in script.text
     assert "data-alerts" in script.text
     assert "/export?format=ndjson" in script.text
+    assert "refresh-runs" in client.get("/").text
+    assert "data-copy-run" in script.text
+    assert "#run=" in script.text

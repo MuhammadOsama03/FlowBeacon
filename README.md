@@ -89,7 +89,7 @@ Development is organized into five milestones: architecture, backend intelligenc
 
 ## Status
 
-FlowBeacon 1.1 is a production-ready single-node release with secure trace ingestion,
+FlowBeacon 1.2 is a production-ready single-node release with secure trace ingestion,
 searchable and paginated run summaries, aggregate metrics, operational error
 classification, authentication foundations, and a responsive dashboard with
 run filtering, trace timelines, metric cards, and resilient interface states.

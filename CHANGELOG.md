@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-10-10
+
+- Added protected storage utilization statistics for operators.
+- Added manual refresh, shareable run links, and run-ID copying to the dashboard.
+- Expanded dashboard regression coverage for the new operational controls.
+
 ## 1.1.0 — 2026-10-09
 
 - Added fail-closed administrative authentication for sensitive operations.
