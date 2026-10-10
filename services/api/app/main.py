@@ -15,7 +15,7 @@ from .alerts import RunAlert, detect_alerts
 from .ingestion import TraceIngestor
 from .evaluation import EvaluationPolicy, EvaluationResult, evaluate_run
 from .exports import export_csv, export_ndjson
-from .models import IngestResult, RetentionResult, RunMetrics, RunPage, RunTrace, TraceBatch, TraceStatus
+from .models import IngestResult, RetentionResult, RunMetrics, RunPage, RunTrace, StorageStatistics, TraceBatch, TraceStatus
 from .otlp import translate_otlp
 from .otlp_models import OtlpExportRequest
 from .storage import TraceStore
@@ -169,3 +169,11 @@ def delete_expired_runs(
         raise HTTPException(status_code=422, detail="Retention cutoff must include a timezone")
     runs, events = store.delete_runs_before(before)
     return RetentionResult(deleted_runs=runs, deleted_events=events)
+
+
+@app.get("/v1/admin/storage", response_model=StorageStatistics)
+def storage_statistics(
+    _: None = Depends(require_admin_key),
+    store: TraceStore = Depends(get_store),
+) -> dict:
+    return store.statistics()

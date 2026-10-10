@@ -91,3 +91,10 @@ class RunMetrics(BaseModel):
 class RetentionResult(BaseModel):
     deleted_runs: int = Field(ge=0)
     deleted_events: int = Field(ge=0)
+
+
+class StorageStatistics(BaseModel):
+    run_count: int = Field(ge=0)
+    event_count: int = Field(ge=0)
+    oldest_event_at: datetime | None = None
+    newest_event_at: datetime | None = None
