@@ -7,6 +7,7 @@ const resultsCount = document.querySelector("#results-count");
 const previousPage = document.querySelector("#previous-page");
 const nextPage = document.querySelector("#next-page");
 const pageLabel = document.querySelector("#page-label");
+const refreshRuns = document.querySelector("#refresh-runs");
 const state = { selected: null, controller: null, offset: 0, limit: 20, total: 0 };
 
 const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, character => ({
@@ -79,6 +80,7 @@ let filterTimer;
 filters.addEventListener("input", () => { state.offset = 0; clearTimeout(filterTimer); filterTimer = setTimeout(loadRuns, 250); });
 previousPage.addEventListener("click", () => { state.offset = Math.max(0, state.offset - state.limit); loadRuns(); });
 nextPage.addEventListener("click", () => { if (state.offset + state.limit < state.total) { state.offset += state.limit; loadRuns(); } });
+refreshRuns.addEventListener("click", () => loadRuns());
 
 list.addEventListener("click", event => {
   const card = event.target.closest("[data-run-id]");

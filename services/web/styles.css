@@ -11,6 +11,8 @@ button { color:inherit; }
 .beacon { width:1rem; height:1rem; border-radius:50%; background:var(--mint); box-shadow:0 0 0 .35rem #5ee0ad22,0 0 2rem var(--mint); }
 .service-state { color:var(--muted); font-size:.85rem; }
 .service-state span { display:inline-block; width:.5rem; height:.5rem; border-radius:50%; background:var(--mint); margin-right:.4rem; }
+.header-actions { display:flex; align-items:center; gap:1rem; }
+.header-actions button { border:1px solid var(--line); border-radius:.5rem; padding:.45rem .7rem; color:var(--text); background:var(--panel-2); cursor:pointer; }
 .workspace { width:min(1440px,100%); margin:auto; padding:clamp(2rem,5vw,5rem) clamp(1rem,4vw,4rem); }
 .intro { max-width:48rem; margin-bottom:2.5rem; }
 .eyebrow { text-transform:uppercase; color:var(--mint); font-size:.75rem; font-weight:700; letter-spacing:.16em; }
