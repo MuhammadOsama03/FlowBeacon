@@ -36,6 +36,7 @@ async function selectRun(runId) {
   state.controller?.abort();
   state.controller = new AbortController();
   state.selected = runId;
+  history.replaceState(null, "", `#run=${encodeURIComponent(runId)}`);
   document.querySelectorAll("[data-run-id]").forEach(card => card.setAttribute("aria-pressed", card.dataset.runId === runId));
   detail.innerHTML = `<div class="empty-state" role="status">Loading trace…</div>`;
   try {
@@ -108,4 +109,17 @@ detail.addEventListener("click", async event => {
   }
 });
 
-loadRuns();
+async function initialize() {
+  await loadRuns();
+  const match = location.hash.match(/^#run=(.+)$/);
+  if (match) {
+    try { await selectRun(decodeURIComponent(match[1])); } catch { /* rendered by selectRun */ }
+  }
+}
+
+window.addEventListener("hashchange", () => {
+  const match = location.hash.match(/^#run=(.+)$/);
+  if (match) selectRun(decodeURIComponent(match[1]));
+});
+
+initialize();
