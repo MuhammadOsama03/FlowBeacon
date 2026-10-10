@@ -36,3 +36,20 @@ def test_retention_endpoint_requires_admin_key(monkeypatch, tmp_path):
         assert response.json() == {"deleted_runs": 1, "deleted_events": 1}
     finally:
         app.dependency_overrides.clear()
+
+
+def test_storage_statistics_are_admin_only(monkeypatch, tmp_path):
+    store = TraceStore(tmp_path / "stats.db")
+    add_event(store, "event-1", "run-1", 2026)
+    monkeypatch.setenv("FLOWBEACON_ADMIN_API_KEY", "storage-admin-secret")
+    app.dependency_overrides[get_store] = lambda: store
+    try:
+        client = TestClient(app)
+        assert client.get("/v1/admin/storage").status_code == 401
+        response = client.get("/v1/admin/storage",
+            headers={"Authorization": "Bearer storage-admin-secret"})
+        assert response.status_code == 200
+        assert response.json()["run_count"] == 1
+        assert response.json()["event_count"] == 1
+    finally:
+        app.dependency_overrides.clear()
