@@ -90,3 +90,11 @@ class TraceStore:
             cursor = connection.execute(
                 f"DELETE FROM trace_events WHERE run_id IN ({placeholders})", run_ids)
         return len(run_ids), cursor.rowcount
+
+    def statistics(self) -> dict[str, int | str | None]:
+        with self._connect() as connection:
+            row = connection.execute(
+                """SELECT COUNT(DISTINCT run_id), COUNT(*), MIN(timestamp), MAX(timestamp)
+                FROM trace_events""").fetchone()
+        return {"run_count": row[0], "event_count": row[1],
+                "oldest_event_at": row[2], "newest_event_at": row[3]}
