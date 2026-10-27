@@ -29,3 +29,25 @@ def require_admin_key(
     if not secrets.compare_digest(supplied, expected):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid administrative credentials", headers={"WWW-Authenticate": "Bearer"})
+
+
+def require_read_key(
+    authorization: Annotated[str | None, Header()] = None,
+) -> None:
+    """Allow local read access; require configured read credentials in production."""
+    settings = Settings.from_environment()
+    expected = settings.read_api_key
+    if settings.environment != "production" and expected is None:
+        return
+    if expected is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Trace read credentials are not configured",
+        )
+    supplied = authorization.removeprefix("Bearer ") if authorization else ""
+    if not secrets.compare_digest(supplied, expected):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid trace read credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
