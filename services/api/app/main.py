@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
-from .auth import require_admin_key, require_ingestion_key
+from .auth import require_admin_key, require_ingestion_key, require_read_key
 from .dependencies import get_ingestor, get_store
 from .analytics import calculate_metrics, summarize_run
 from .alerts import RunAlert, detect_alerts
@@ -92,7 +92,7 @@ RunIdentifier = Annotated[
 ]
 
 
-@app.get("/v1/runs", response_model=RunPage)
+@app.get("/v1/runs", response_model=RunPage, dependencies=[Depends(require_read_key)])
 def list_runs(
     status_filter: Annotated[TraceStatus | None, Query(alias="status")] = None,
     search: Annotated[str | None, Query(min_length=1, max_length=128)] = None,
@@ -106,7 +106,7 @@ def list_runs(
         total=total, limit=limit, offset=offset)
 
 
-@app.get("/v1/runs/{run_id}", response_model=RunTrace)
+@app.get("/v1/runs/{run_id}", response_model=RunTrace, dependencies=[Depends(require_read_key)])
 def get_run(
     run_id: RunIdentifier,
     store: TraceStore = Depends(get_store),
@@ -117,7 +117,7 @@ def get_run(
     return RunTrace(run_id=run_id, events=events)
 
 
-@app.get("/v1/runs/{run_id}/metrics", response_model=RunMetrics)
+@app.get("/v1/runs/{run_id}/metrics", response_model=RunMetrics, dependencies=[Depends(require_read_key)])
 def get_run_metrics(run_id: RunIdentifier, store: TraceStore = Depends(get_store)) -> RunMetrics:
     events = store.get_run(run_id)
     if not events:
@@ -125,7 +125,7 @@ def get_run_metrics(run_id: RunIdentifier, store: TraceStore = Depends(get_store
     return calculate_metrics(events)
 
 
-@app.post("/v1/runs/{run_id}/evaluate", response_model=EvaluationResult)
+@app.post("/v1/runs/{run_id}/evaluate", response_model=EvaluationResult, dependencies=[Depends(require_read_key)])
 def evaluate_trace_run(
     run_id: RunIdentifier,
     policy: EvaluationPolicy,
@@ -137,7 +137,7 @@ def evaluate_trace_run(
     return evaluate_run(events, policy)
 
 
-@app.post("/v1/runs/{run_id}/alerts", response_model=list[RunAlert])
+@app.post("/v1/runs/{run_id}/alerts", response_model=list[RunAlert], dependencies=[Depends(require_read_key)])
 def preview_run_alerts(run_id: RunIdentifier, policy: EvaluationPolicy,
                        store: TraceStore = Depends(get_store)) -> list[RunAlert]:
     events = store.get_run(run_id)
@@ -146,7 +146,7 @@ def preview_run_alerts(run_id: RunIdentifier, policy: EvaluationPolicy,
     return detect_alerts(events, policy)
 
 
-@app.get("/v1/runs/{run_id}/export")
+@app.get("/v1/runs/{run_id}/export", dependencies=[Depends(require_read_key)])
 def export_run(run_id: RunIdentifier,
                format: Annotated[str, Query(pattern="^(ndjson|csv)$")] = "ndjson",
                store: TraceStore = Depends(get_store)) -> Response:
